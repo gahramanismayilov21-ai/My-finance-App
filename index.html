@@ -1,98 +1,222 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Wealth Pilot</title>
+    <title>Wealth Pilot PLN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .gradient-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
         .card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body class="gradient-bg text-gray-100 min-h-screen p-4 font-sans">
 
-    <header class="max-w-4xl mx-auto mb-8">
-        <h1 class="text-3xl font-bold text-blue-400">Wealth Pilot 1.0</h1>
-        <div id="ai-tip" class="mt-4 p-4 card rounded-xl border-l-4 border-yellow-500">
-            <span class="text-yellow-500 font-bold">Daily AI Trick:</span>
-            <span id="tip-text">Loading your financial wisdom...</span>
+    <header class="max-w-6xl mx-auto mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-blue-400">Wealth Pilot <span class="text-white text-sm font-normal">v2.0</span></h1>
+            <p id="date-display" class="text-gray-400 text-sm"></p>
+        </div>
+        <div class="text-right">
+            <p class="text-xs text-gray-500 uppercase tracking-widest">Next Salary</p>
+            <p id="days-to-salary" class="text-xl font-mono font-bold text-green-400">-- Days</p>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+    <section class="max-w-6xl mx-auto mb-8 p-4 card rounded-xl border-l-4 border-purple-500">
+        <h3 class="text-purple-400 font-bold text-sm uppercase">AI Analysis & Tips</h3>
+        <p id="ai-analysis" class="text-gray-200 mt-1 italic">Analyzing your data...</p>
+    </section>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
        
-        <section class="card p-6 rounded-2xl">
-            <h2 class="text-xl font-semibold mb-4 text-blue-300">Log Spending</h2>
-            <div class="space-y-4">
-                <input type="number" id="amount" placeholder="Amount ($)" class="w-full bg-gray-800 p-3 rounded-lg border border-gray-700 outline-none">
-                <select id="category" class="w-full bg-gray-800 p-3 rounded-lg border border-gray-700">
-                    <option value="Needs">Needs (Rent/Food)</option>
-                    <option value="Wants">Wants (Fun/Shopping)</option>
-                    <option value="Savings">Savings/Debt</option>
-                </select>
-                <button onclick="addExpense()" class="w-full bg-blue-600 hover:bg-blue-500 transition p-3 rounded-lg font-bold">Record Transaction</button>
-            </div>
-        </section>
+        <div class="space-y-6">
+            <section class="card p-5 rounded-2xl">
+                <h2 class="text-lg font-semibold mb-4 text-blue-300">1 & 2. Monthly Setup</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-400">Monthly Salary (PLN)</label>
+                        <input type="number" id="salaryInput" onchange="saveConfig()" class="w-full bg-gray-800 p-2 rounded border border-gray-700">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Fixed Monthly Spending (Rent/Bills)</label>
+                        <input type="number" id="fixedSpendingInput" onchange="saveConfig()" class="w-full bg-gray-800 p-2 rounded border border-gray-700">
+                    </div>
+                </div>
+            </section>
 
-        <section class="card p-6 rounded-2xl">
-            <h2 class="text-xl font-semibold mb-2 text-blue-300">Financial Impact</h2>
-            <div id="impact-stats" class="text-sm text-gray-400">
-                <p>Based on a $20/hr wage:</p>
-                <p class="text-2xl mt-2 text-white"><span id="hours-lost">0</span> Hours of your life spent today.</p>
-            </div>
-            <div class="mt-4 h-40">
-                <canvas id="spendChart"></canvas>
-            </div>
-        </section>
+            <section class="card p-5 rounded-2xl">
+                <h2 class="text-lg font-semibold mb-4 text-blue-300">3 & 4. Daily Logging</h2>
+                <div class="space-y-3">
+                    <input type="text" id="logDesc" placeholder="Description (e.g. Coffee)" class="w-full bg-gray-800 p-2 rounded border border-gray-700">
+                    <input type="number" id="logAmount" placeholder="Amount (PLN)" class="w-full bg-gray-800 p-2 rounded border border-gray-700">
+                    <select id="logType" class="w-full bg-gray-800 p-2 rounded border border-gray-700">
+                        <option value="expense">Expense</option>
+                        <option value="saving">To Savings Account</option>
+                    </select>
+                    <button onclick="addLog()" class="w-full bg-blue-600 hover:bg-blue-500 p-2 rounded font-bold transition">Add Entry</button>
+                </div>
+            </section>
+        </div>
 
+        <div class="lg:col-span-2 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="card p-4 rounded-xl text-center">
+                    <p class="text-xs text-gray-400 uppercase">Total Saved</p>
+                    <p id="stat-saved" class="text-2xl font-bold text-green-400">0 PLN</p>
+                </div>
+                <div class="card p-4 rounded-xl text-center">
+                    <p class="text-xs text-gray-400 uppercase">Daily Budget Left</p>
+                    <p id="stat-daily" class="text-2xl font-bold text-yellow-400">0 PLN</p>
+                </div>
+                <div class="card p-4 rounded-xl text-center">
+                    <p class="text-xs text-gray-400 uppercase">Remaining Balance</p>
+                    <p id="stat-balance" class="text-2xl font-bold text-blue-400">0 PLN</p>
+                </div>
+            </div>
+
+            <section class="card p-6 rounded-2xl">
+                <h2 class="text-lg font-semibold mb-4">5. Spending Trend</h2>
+                <div style="height: 250px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </section>
+
+            <section class="card p-6 rounded-2xl">
+                <h2 class="text-lg font-semibold mb-4">9 & 10. History</h2>
+                <div class="overflow-y-auto max-h-64">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-gray-500 border-b border-gray-700">
+                            <tr>
+                                <th class="pb-2">Date</th>
+                                <th class="pb-2">Note</th>
+                                <th class="pb-2">Amount</th>
+                                <th class="pb-2 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
     </main>
 
     <script>
-        let totalSpent = 0;
-        const hourlyWage = 20; // You can change this!
-        const tips = [
-            "Wait 24 hours before any 'Want' purchase over $30. Usually, the urge dies.",
-            "Unsubscribe from marketing emails. If you don't see the sale, you don't spend.",
-            "Transfer $5 to savings every time you feel like buying a coffee but don't.",
-            "Check your bank app daily. Awareness is 50% of the battle."
-        ];
+        let logs = JSON.parse(localStorage.getItem('logs')) || [];
+        let config = JSON.parse(localStorage.getItem('config')) || { salary: 0, fixed: 0 };
+        let chart;
 
-        // Initialize Chart
-        const ctx = document.getElementById('spendChart').getContext('2d');
-        const spendChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Needs', 'Wants', 'Savings'],
-                datasets: [{
-                    data: [0, 0, 0],
-                    backgroundColor: ['#3b82f6', '#ef4444', '#10b981']
-                }]
-            },
-            options: { plugins: { legend: { labels: { color: 'white' } } } }
-        });
-
-        function addExpense() {
-            const amt = parseFloat(document.getElementById('amount').value);
-            const cat = document.getElementById('category').selectedIndex;
-           
-            if (isNaN(amt)) return;
-
-            // Update Chart
-            spendChart.data.datasets[0].data[cat] += amt;
-            spendChart.update();
-
-            // Update Hours Lost
-            totalSpent += amt;
-            document.getElementById('hours-lost').innerText = (totalSpent / hourlyWage).toFixed(1);
-           
-            // Clear input
-            document.getElementById('amount').value = '';
+        function init() {
+            document.getElementById('salaryInput').value = config.salary;
+            document.getElementById('fixedSpendingInput').value = config.fixed;
+            document.getElementById('date-display').innerText = new Date().toLocaleDateString('pl-PL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            updateUI();
         }
 
-        // Set Random Tip
-        document.getElementById('tip-text').innerText = tips[Math.floor(Math.random() * tips.length)];
+        function saveConfig() {
+            config.salary = parseFloat(document.getElementById('salaryInput').value) || 0;
+            config.fixed = parseFloat(document.getElementById('fixedSpendingInput').value) || 0;
+            localStorage.setItem('config', JSON.stringify(config));
+            updateUI();
+        }
+
+        function addLog() {
+            const desc = document.getElementById('logDesc').value || "No Description";
+            const amt = parseFloat(document.getElementById('logAmount').value);
+            const type = document.getElementById('logType').value;
+
+            if (isNaN(amt)) return;
+
+            const entry = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('pl-PL'),
+                desc,
+                amt,
+                type
+            };
+
+            logs.push(entry);
+            localStorage.setItem('logs', JSON.stringify(logs));
+            document.getElementById('logAmount').value = '';
+            document.getElementById('logDesc').value = '';
+            updateUI();
+        }
+
+        function deleteLog(id) {
+            logs = logs.filter(l => l.id !== id);
+            localStorage.setItem('logs', JSON.stringify(logs));
+            updateUI();
+        }
+
+        function updateUI() {
+            const historyBody = document.getElementById('history-body');
+            historyBody.innerHTML = '';
+           
+            let totalExpenses = config.fixed;
+            let totalSavings = 0;
+
+            logs.forEach(log => {
+                if(log.type === 'expense') totalExpenses += log.amt;
+                else totalSavings += log.amt;
+
+                const row = `<tr class="border-b border-gray-800">
+                    <td class="py-3 text-gray-500">${log.date}</td>
+                    <td class="py-3">${log.desc}</td>
+                    <td class="py-3 ${log.type === 'saving' ? 'text-green-400' : 'text-red-400'}">${log.amt} PLN</td>
+                    <td class="py-3 text-right"><button onclick="deleteLog(${log.id})" class="text-xs bg-red-900/30 text-red-400 px-2 py-1 rounded hover:bg-red-900">Del</button></td>
+                </tr>`;
+                historyBody.insertAdjacentHTML('afterbegin', row);
+            });
+
+            // Calculate Salary Logic (10th of month)
+            const now = new Date();
+            let salaryDate = new Date(now.getFullYear(), now.getMonth(), 10);
+            if (now.getDate() >= 10) salaryDate.setMonth(salaryDate.getMonth() + 1);
+            const daysLeft = Math.ceil((salaryDate - now) / (1000 * 60 * 60 * 24));
+            document.getElementById('days-to-salary').innerText = daysLeft + " Days";
+
+            const balance = config.salary - totalExpenses - totalSavings;
+            const dailyBudget = balance > 0 ? (balance / daysLeft).toFixed(2) : 0;
+
+            document.getElementById('stat-saved').innerText = totalSavings.toLocaleString() + " PLN";
+            document.getElementById('stat-balance').innerText = balance.toLocaleString() + " PLN";
+            document.getElementById('stat-daily').innerText = dailyBudget + " PLN";
+
+            updateAI(balance, dailyBudget, totalExpenses, daysLeft);
+            updateChart();
+        }
+
+        function updateAI(balance, daily, spent, days) {
+            const aiBox = document.getElementById('ai-analysis');
+            if (balance < 0) {
+                aiBox.innerHTML = "⚠️ <strong>WARNING:</strong> You are over-budget by " + Math.abs(balance) + " PLN. Stop all non-essential spending immediately.";
+            } else if (daily < 50) {
+                aiBox.innerHTML = "💡 <strong>AI TIP:</strong> Your daily budget is tight (" + daily + " PLN). Avoid Zapiecek or eating out. Focus on home-cooking until the 10th.";
+            } else {
+                aiBox.innerHTML = "✅ <strong>ON TRACK:</strong> You're doing well. If you save 10% more of your current balance, you'll reach your goals 3 months faster.";
+            }
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (chart) chart.destroy();
+
+            const chartData = {
+                labels: ['Salary', 'Spent', 'Saved', 'Balance'],
+                datasets: [{
+                    label: 'PLN',
+                    data: [config.salary, logs.filter(l=>l.type==='expense').reduce((a,b)=>a+b.amt,0)+config.fixed, logs.filter(l=>l.type==='saving').reduce((a,b)=>a+b.amt,0), config.salary - logs.reduce((a,b)=>a+b.amt,0) - config.fixed],
+                    backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b']
+                }]
+            };
+
+            chart = new Chart(ctx, { type: 'bar', data: chartData, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: 'white' } } } } });
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
