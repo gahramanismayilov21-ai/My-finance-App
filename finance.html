@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wealth Pilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        .card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="gradient-bg text-gray-100 min-h-screen p-4 font-sans">
+
+    <header class="max-w-4xl mx-auto mb-8">
+        <h1 class="text-3xl font-bold text-blue-400">Wealth Pilot 1.0</h1>
+        <div id="ai-tip" class="mt-4 p-4 card rounded-xl border-l-4 border-yellow-500">
+            <span class="text-yellow-500 font-bold">Daily AI Trick:</span>
+            <span id="tip-text">Loading your financial wisdom...</span>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+       
+        <section class="card p-6 rounded-2xl">
+            <h2 class="text-xl font-semibold mb-4 text-blue-300">Log Spending</h2>
+            <div class="space-y-4">
+                <input type="number" id="amount" placeholder="Amount ($)" class="w-full bg-gray-800 p-3 rounded-lg border border-gray-700 outline-none">
+                <select id="category" class="w-full bg-gray-800 p-3 rounded-lg border border-gray-700">
+                    <option value="Needs">Needs (Rent/Food)</option>
+                    <option value="Wants">Wants (Fun/Shopping)</option>
+                    <option value="Savings">Savings/Debt</option>
+                </select>
+                <button onclick="addExpense()" class="w-full bg-blue-600 hover:bg-blue-500 transition p-3 rounded-lg font-bold">Record Transaction</button>
+            </div>
+        </section>
+
+        <section class="card p-6 rounded-2xl">
+            <h2 class="text-xl font-semibold mb-2 text-blue-300">Financial Impact</h2>
+            <div id="impact-stats" class="text-sm text-gray-400">
+                <p>Based on a $20/hr wage:</p>
+                <p class="text-2xl mt-2 text-white"><span id="hours-lost">0</span> Hours of your life spent today.</p>
+            </div>
+            <div class="mt-4 h-40">
+                <canvas id="spendChart"></canvas>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let totalSpent = 0;
+        const hourlyWage = 20; // You can change this!
+        const tips = [
+            "Wait 24 hours before any 'Want' purchase over $30. Usually, the urge dies.",
+            "Unsubscribe from marketing emails. If you don't see the sale, you don't spend.",
+            "Transfer $5 to savings every time you feel like buying a coffee but don't.",
+            "Check your bank app daily. Awareness is 50% of the battle."
+        ];
+
+        // Initialize Chart
+        const ctx = document.getElementById('spendChart').getContext('2d');
+        const spendChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Needs', 'Wants', 'Savings'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: ['#3b82f6', '#ef4444', '#10b981']
+                }]
+            },
+            options: { plugins: { legend: { labels: { color: 'white' } } } }
+        });
+
+        function addExpense() {
+            const amt = parseFloat(document.getElementById('amount').value);
+            const cat = document.getElementById('category').selectedIndex;
+           
+            if (isNaN(amt)) return;
+
+            // Update Chart
+            spendChart.data.datasets[0].data[cat] += amt;
+            spendChart.update();
+
+            // Update Hours Lost
+            totalSpent += amt;
+            document.getElementById('hours-lost').innerText = (totalSpent / hourlyWage).toFixed(1);
+           
+            // Clear input
+            document.getElementById('amount').value = '';
+        }
+
+        // Set Random Tip
+        document.getElementById('tip-text').innerText = tips[Math.floor(Math.random() * tips.length)];
+    </script>
+</body>
+</html>
